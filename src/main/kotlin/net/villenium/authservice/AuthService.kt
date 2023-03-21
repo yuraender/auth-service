@@ -16,6 +16,7 @@ class AuthService {
             val nArgs: MutableList<String> = args.toMutableList()
             listOf(
                 "classpath:application.properties",
+                "classpath:mail.properties",
                 "classpath:sql.properties"
             ).let {
                 nArgs += "--spring.config.location=${it.joinToString(",")}"

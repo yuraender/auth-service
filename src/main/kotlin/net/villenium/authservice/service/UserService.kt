@@ -16,6 +16,7 @@ class UserService(
     private val userRepository: UserRepository,
     private val activationCache: Cache<User, Int>,
     private val passwordEncoder: PasswordEncoder,
+    private val emailService: EmailService,
     private val tokenService: TokenService
 ) {
 
@@ -26,7 +27,7 @@ class UserService(
         return user
     }
 
-    fun register(user: User): String {
+    fun register(user: User): Boolean {
         validate(user)
         if (userRepository.findByLogin(user.login!!) != null
             || userRepository.findByEmail(user.email!!) != null) {
@@ -34,8 +35,12 @@ class UserService(
         }
         val code = (100000..999999).random()
         activationCache.put(user, code)
-        //TODO: отправка письма на почту игрока
-        return "Письмо отправлено на ${user.email}. У вас 5 минут на активацию."
+        emailService.sendMessage(
+            user.email,
+            "Подтверждение регистрации",
+            "Код для активации: $code"
+        )
+        return true
     }
 
     fun activate(email: String, code: Int): String {

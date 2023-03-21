@@ -1,5 +1,6 @@
 package net.villenium.authservice.controller
 
+import com.google.gson.JsonObject
 import net.villenium.authservice.config.error.ApiError
 import net.villenium.authservice.pojo.User
 import net.villenium.authservice.service.UserService
@@ -22,24 +23,36 @@ class AuthController(
     @PostMapping("/register")
     fun create(
         @RequestBody user: User
-    ): ResponseEntity<String> {
-        return ResponseEntity.ok().body(userService.register(user))
+    ): ResponseEntity<Any> {
+        val register: Boolean = userService.register(user)
+
+        val response = JsonObject()
+        response.addProperty("success", register)
+        return ResponseEntity.ok().body(response)
     }
 
     @PostMapping("/activate")
     fun activate(
         @RequestParam email: String,
         @RequestParam code: Int
-    ): ResponseEntity<String> {
-        return ResponseEntity.ok().body(userService.activate(email, code))
+    ): ResponseEntity<Any> {
+        val token: String = userService.activate(email, code)
+
+        val response = JsonObject()
+        response.addProperty("token", token)
+        return ResponseEntity.ok().body(response)
     }
 
     @PostMapping("/login")
     fun login(
         @RequestParam login: String,
         @RequestParam password: String
-    ): ResponseEntity<String> {
-        return ResponseEntity.ok().body(userService.login(login, password))
+    ): ResponseEntity<Any> {
+        val token: String = userService.login(login, password)
+
+        val response = JsonObject()
+        response.addProperty("token", token)
+        return ResponseEntity.ok().body(response)
     }
 
     @PostMapping("/changePassword")
@@ -50,14 +63,22 @@ class AuthController(
         if (adminUser != null && adminUser.id != user.id) {
             return ApiError.AUTH_ACCESS_DENIED.build()
         }
-        return ResponseEntity.ok().body(userService.changePassword(user))
+        val token: String = userService.changePassword(user)
+
+        val response = JsonObject()
+        response.addProperty("token", token)
+        return ResponseEntity.ok().body(response)
     }
 
     @GetMapping("/validate")
     fun validate(
         @RequestParam login: String,
         @RequestParam password: String
-    ): ResponseEntity<Boolean> {
-        return ResponseEntity.ok().body(userService.validateAccount(login, password))
+    ): ResponseEntity<Any> {
+        val validateAccount: Boolean = userService.validateAccount(login, password)
+
+        val response = JsonObject()
+        response.addProperty("success", validateAccount)
+        return ResponseEntity.ok().body(response)
     }
 }
