@@ -1,10 +1,11 @@
 package net.villenium.authservice
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
 import org.springframework.boot.runApplication
 import org.springframework.context.ApplicationContext
 
-@SpringBootApplication
+@SpringBootApplication(exclude = [UserDetailsServiceAutoConfiguration::class])
 class AuthService {
 
     companion object {

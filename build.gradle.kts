@@ -25,6 +25,10 @@ dependencies {
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-mail")
+    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-gson:0.11.5")
+    implementation("com.github.ben-manes.caffeine:caffeine:3.1.5")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 }
 

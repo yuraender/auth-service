@@ -10,6 +10,10 @@ enum class ApiError(
     private val message: String,
     private val httpStatus: HttpStatus
 ) {
+    AUTH_ACCESS_DENIED("Insufficient permissions for this method", HttpStatus.FORBIDDEN),
+    TOKEN_EXPIRED("Token is expired. Please make new one", HttpStatus.UNAUTHORIZED),
+    TOKEN_INVALID("Token is invalid. Please make new one", HttpStatus.UNAUTHORIZED),
+
     METHOD_NOT_FOUND("Method not found", HttpStatus.NOT_FOUND),
     MISSING_PARAMETER("Required request parameter '%s' is missing", HttpStatus.BAD_REQUEST),
     MISSING_BODY("Required request body is missing", HttpStatus.BAD_REQUEST),

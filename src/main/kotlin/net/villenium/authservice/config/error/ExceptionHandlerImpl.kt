@@ -1,5 +1,6 @@
 package net.villenium.authservice.config.error
 
+import net.villenium.authservice.ApiException
 import net.villenium.authservice.ValidationException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -47,7 +48,7 @@ class ExceptionHandlerImpl : ResponseEntityExceptionHandler() {
     //API Errors
     @ExceptionHandler(RuntimeException::class, ValidationException::class)
     protected /* 500 */ fun handleException(ex: RuntimeException, request: HttpServletRequest): ResponseEntity<Any> {
-        val status: HttpStatus = if (ex is ValidationException) {
+        val status: HttpStatus = if (ex is ApiException || ex is ValidationException) {
             HttpStatus.BAD_REQUEST
         } else {
             HttpStatus.INTERNAL_SERVER_ERROR

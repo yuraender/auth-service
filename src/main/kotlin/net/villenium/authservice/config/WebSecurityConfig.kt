@@ -4,14 +4,21 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.web.AuthenticationEntryPoint
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 
 @EnableWebSecurity
-class WebSecurityConfig : WebSecurityConfigurerAdapter() {
+class WebSecurityConfig(
+    private val authorizationFilter: JwtAuthorizationFilter,
+    private val authenticationEntryPoint: AuthenticationEntryPoint
+) : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
         http.csrf().disable()
+            .addFilterAfter(authorizationFilter, BasicAuthenticationFilter::class.java)
             .authorizeRequests()
             .antMatchers("/", "/*/**").permitAll()
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint)
     }
 }
