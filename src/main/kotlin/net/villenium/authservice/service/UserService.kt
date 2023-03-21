@@ -29,10 +29,16 @@ class UserService(
 
     fun register(user: User): Boolean {
         validate(user)
+        activationCache.asMap()
+            .keys
+            .stream()
+            .anyMatch { it.email == user.email }
+            .let { if (it) throw UserAlreadyExistException() }
         if (userRepository.findByLogin(user.login!!) != null
             || userRepository.findByEmail(user.email!!) != null) {
             throw UserAlreadyExistException()
         }
+
         val code = (100000..999999).random()
         activationCache.put(user, code)
         emailService.sendMessage(
