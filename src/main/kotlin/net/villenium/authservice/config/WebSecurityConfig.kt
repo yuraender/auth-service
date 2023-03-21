@@ -17,7 +17,7 @@ class WebSecurityConfig(
         http.csrf().disable()
             .addFilterAfter(authorizationFilter, BasicAuthenticationFilter::class.java)
             .authorizeRequests()
-            .antMatchers("/", "/*/**").permitAll()
+            .antMatchers("/auth/changePassword", "/auth/changePassword/**").authenticated()
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint)
     }
