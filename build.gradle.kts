@@ -17,17 +17,18 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web") {
-        implementation("com.google.code.gson:gson")
-        exclude("org.springframework.boot", "spring-boot-starter-json")
-    }
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-mail")
+    implementation("io.springfox:springfox-boot-starter:3.0.0")
+
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-gson:0.11.5")
+
+    implementation("com.google.code.gson:gson")
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.5")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 }

@@ -1,11 +1,17 @@
 package net.villenium.authservice
 
-abstract class ApiException(message: String) : RuntimeException(message)
+import org.springframework.http.HttpStatus
 
-class UserNotFoundException : ApiException("User is not found")
+abstract class ApiException(message: String, val status: HttpStatus) : RuntimeException(message)
 
-class UserAlreadyExistException : ApiException("User already exists")
+class UserNotFoundException : ApiException("User is not found", HttpStatus.NOT_FOUND)
 
-class InvalidCodeException : ApiException("Activation code is invalid")
+class UserAlreadyExistException : ApiException("User already exists", HttpStatus.BAD_REQUEST)
+
+class IncorrectTokenException : ApiException("Token is invalid", HttpStatus.UNAUTHORIZED)
+
+class IncorrectPasswordException : ApiException("Incorrect login or password", HttpStatus.FORBIDDEN)
+
+class InvalidCodeException : ApiException("Activation code is invalid", HttpStatus.BAD_REQUEST)
 
 class ValidationException(message: String) : RuntimeException(message)

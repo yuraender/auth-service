@@ -1,11 +1,18 @@
 package net.villenium.authservice.controller
 
-import com.google.gson.JsonObject
-import net.villenium.authservice.config.error.ApiError
+import io.swagger.annotations.Api
+import io.swagger.annotations.ApiImplicitParam
+import io.swagger.annotations.ApiImplicitParams
+import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiParam
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.ApiResponses
+import io.swagger.annotations.Example
+import io.swagger.annotations.ExampleProperty
+import net.villenium.authservice.IncorrectTokenException
 import net.villenium.authservice.pojo.User
 import net.villenium.authservice.service.UserService
 import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -16,69 +23,101 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/auth", produces = [MediaType.APPLICATION_JSON_VALUE])
+@Api(description = "Operations pertaining to authorization")
 class AuthController(
     private val userService: UserService
 ) {
 
     @PostMapping("/register")
+    @ApiOperation("Register a user", response = Boolean::class)
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Status"),
+        ApiResponse(code = 400, message = "User already exists"),
+        ApiResponse(code = 500, message = "Validation error")
+    ])
     fun create(
+        @ApiParam("The user body", required = true)
         @RequestBody user: User
-    ): ResponseEntity<Any> {
-        val register: Boolean = userService.register(user)
-
-        val response = JsonObject()
-        response.addProperty("success", register)
-        return ResponseEntity.ok().body(response)
+    ): Boolean {
+        return userService.register(user)
     }
 
     @PostMapping("/activate")
+    @ApiOperation("Activate an account", response = String::class)
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Token", examples = Example(ExampleProperty(token))),
+        ApiResponse(code = 400, message = "Activation code is invalid"),
+        ApiResponse(code = 404, message = "User is not found"),
+        ApiResponse(code = 500, message = "Validation error")
+    ])
     fun activate(
+        @ApiParam("The email an account linked with", required = true)
         @RequestParam email: String,
+        @ApiParam("An activation code", required = true)
         @RequestParam code: Int
-    ): ResponseEntity<Any> {
-        val token: String = userService.activate(email, code)
-
-        val response = JsonObject()
-        response.addProperty("token", token)
-        return ResponseEntity.ok().body(response)
+    ): String {
+        return userService.activate(email, code)
     }
 
     @PostMapping("/login")
+    @ApiOperation("Login into an account", response = String::class)
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Token", examples = Example(ExampleProperty(token))),
+        ApiResponse(code = 403, message = "Incorrect login or password"),
+        ApiResponse(code = 404, message = "User is not found"),
+        ApiResponse(code = 500, message = "Validation error")
+    ])
     fun login(
+        @ApiParam("The login an account linked with", required = true)
         @RequestParam login: String,
+        @ApiParam("Password of an account", required = true)
         @RequestParam password: String
-    ): ResponseEntity<Any> {
-        val token: String = userService.login(login, password)
-
-        val response = JsonObject()
-        response.addProperty("token", token)
-        return ResponseEntity.ok().body(response)
+    ): String {
+        return userService.login(login, password)
     }
 
     @PostMapping("/changePassword")
+    @ApiOperation("Change password of an account", response = String::class)
+    @ApiImplicitParams(value = [
+        ApiImplicitParam(name = "Authorization", value = "Bearer token", required = true, paramType = "header")
+    ])
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Token", examples = Example(ExampleProperty(token))),
+        ApiResponse(code = 401, message = "Token is invalid"),
+        ApiResponse(code = 404, message = "User is not found"),
+        ApiResponse(code = 500, message = "Validation error")
+    ])
     fun changePassword(
+        @ApiParam("The user body", required = true)
         @RequestBody user: User,
         @AuthenticationPrincipal adminUser: User?
-    ): ResponseEntity<Any> {
+    ): String {
         if (adminUser != null && adminUser.id != user.id) {
-            return ApiError.AUTH_ACCESS_DENIED.build()
+            throw IncorrectTokenException()
         }
-        val token: String = userService.changePassword(user)
-
-        val response = JsonObject()
-        response.addProperty("token", token)
-        return ResponseEntity.ok().body(response)
+        return userService.changePassword(user)
     }
 
     @GetMapping("/validate")
+    @ApiOperation("Validate an account", response = Boolean::class)
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Status"),
+        ApiResponse(code = 404, message = "User is not found"),
+        ApiResponse(code = 500, message = "Validation error")
+    ])
     fun validate(
+        @ApiParam("The login an account linked with", required = true)
         @RequestParam login: String,
+        @ApiParam("Password of an account", required = true)
         @RequestParam password: String
-    ): ResponseEntity<Any> {
-        val validateAccount: Boolean = userService.validateAccount(login, password)
+    ): Boolean {
+        return userService.validateAccount(login, password)
+    }
 
-        val response = JsonObject()
-        response.addProperty("success", validateAccount)
-        return ResponseEntity.ok().body(response)
+    companion object {
+        private const val token: String = "eyJhbGciOiJIUzI1NiJ9" +
+                ".eyJzdWIiOiJZdXJhRW5kZXIiLCJwYXNzd29yZCI6IiQyYSQxMCQ0anZqTXRkTHJkdHAybFVmMEVsS2h1L0V4L2ZXRnlDSlRn" +
+                "T2RZUkhVcmdtcS9Pc2FiUXR1eSIsImVtYWlsIjoieXVyYWVuZGVyQHlhbmRleC5ydSIsImlhdCI6MTY4MDM3MDkxMiwiZXhwI" +
+                "joxNjgwNDU3MzEyfQ.1FrWRz0AIK5Z_OD3HMxn8EWSXzVIDTcVOt3aihuygfo"
     }
 }

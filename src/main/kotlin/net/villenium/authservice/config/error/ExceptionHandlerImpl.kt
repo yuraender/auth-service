@@ -46,12 +46,12 @@ class ExceptionHandlerImpl : ResponseEntityExceptionHandler() {
     }
 
     //API Errors
-    @ExceptionHandler(RuntimeException::class, ValidationException::class)
+    @ExceptionHandler(RuntimeException::class)
     protected /* 500 */ fun handleException(ex: RuntimeException, request: HttpServletRequest): ResponseEntity<Any> {
-        val status: HttpStatus = if (ex is ApiException || ex is ValidationException) {
-            HttpStatus.BAD_REQUEST
-        } else {
-            HttpStatus.INTERNAL_SERVER_ERROR
+        val status: HttpStatus = when (ex) {
+            is ApiException -> ex.status
+            is ValidationException -> HttpStatus.BAD_REQUEST
+            else -> HttpStatus.INTERNAL_SERVER_ERROR
         }
         val trace: String? = request.getParameter("trace")
         return if (trace != null && !"false".equals(trace, true)) {

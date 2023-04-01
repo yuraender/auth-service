@@ -2,6 +2,7 @@ package net.villenium.authservice.service
 
 import com.github.benmanes.caffeine.cache.Cache
 import net.villenium.authservice.EMAIL_ADDRESS_PATTERN
+import net.villenium.authservice.IncorrectPasswordException
 import net.villenium.authservice.InvalidCodeException
 import net.villenium.authservice.UserAlreadyExistException
 import net.villenium.authservice.UserNotFoundException
@@ -65,11 +66,11 @@ class UserService(
     }
 
     fun login(login: String, password: String): String {
-        val userDto: User = find(login)
+        val user: User = find(login)
         if (!validateAccount(login, password)) {
-            throw ValidationException("Incorrect login or password")
+            throw IncorrectPasswordException()
         }
-        return tokenService.createToken(userDto)
+        return tokenService.createToken(user)
     }
 
     fun changePassword(user: User): String {
@@ -78,8 +79,8 @@ class UserService(
     }
 
     fun validateAccount(login: String, password: String): Boolean {
-        val userDto: User = find(login)
-        return passwordEncoder.matches(password, userDto.password)
+        val user: User = find(login)
+        return passwordEncoder.matches(password, user.password)
     }
 
     private fun save(user: User, create: Boolean): User {
