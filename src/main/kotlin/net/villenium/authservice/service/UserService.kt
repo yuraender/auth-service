@@ -73,9 +73,10 @@ class UserService(
         return tokenService.createToken(user)
     }
 
-    fun changePassword(user: User): String {
-        val updatedUser: User = save(user, false)
-        return tokenService.createToken(updatedUser)
+    fun changePassword(login: String, password: String): String {
+        val user: User = find(login)
+        user.password = password
+        return tokenService.createToken(save(user, false))
     }
 
     fun validateAccount(login: String, password: String): Boolean {

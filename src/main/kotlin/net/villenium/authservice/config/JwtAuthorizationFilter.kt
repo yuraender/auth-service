@@ -34,7 +34,9 @@ class JwtAuthorizationFilter(
             if (token != null && token.startsWith(AUTHORIZATION_PREFIX)) {
                 val claims: Claims = tokenService
                     .parseToken(token.removePrefix(AUTHORIZATION_PREFIX))
-                authorize(claims)
+                if (claims["password"] as String == userService.find(claims.subject).password) {
+                    authorize(claims)
+                }
                 filterChain.doFilter(request, response)
                 return
             }

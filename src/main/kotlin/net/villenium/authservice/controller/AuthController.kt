@@ -45,7 +45,8 @@ class AuthController(
     @PostMapping("/activate")
     @ApiOperation("Activate an account", response = String::class)
     @ApiResponses(value = [
-        ApiResponse(code = 200, message = "Token", examples = Example(ExampleProperty(token))),
+        ApiResponse(code = 200, message = "Token",
+            examples = Example(ExampleProperty(token, mediaType = "application/json"))),
         ApiResponse(code = 400, message = "Activation code is invalid"),
         ApiResponse(code = 404, message = "User is not found"),
         ApiResponse(code = 500, message = "Validation error")
@@ -62,7 +63,8 @@ class AuthController(
     @PostMapping("/login")
     @ApiOperation("Login into an account", response = String::class)
     @ApiResponses(value = [
-        ApiResponse(code = 200, message = "Token", examples = Example(ExampleProperty(token))),
+        ApiResponse(code = 200, message = "Token",
+            examples = Example(ExampleProperty(token, mediaType = "application/json"))),
         ApiResponse(code = 403, message = "Incorrect login or password"),
         ApiResponse(code = 404, message = "User is not found"),
         ApiResponse(code = 500, message = "Validation error")
@@ -82,20 +84,23 @@ class AuthController(
         ApiImplicitParam(name = "Authorization", value = "Bearer token", required = true, paramType = "header")
     ])
     @ApiResponses(value = [
-        ApiResponse(code = 200, message = "Token", examples = Example(ExampleProperty(token))),
+        ApiResponse(code = 200, message = "Token",
+            examples = Example(ExampleProperty(token, mediaType = "application/json"))),
         ApiResponse(code = 401, message = "Token is invalid"),
         ApiResponse(code = 404, message = "User is not found"),
         ApiResponse(code = 500, message = "Validation error")
     ])
     fun changePassword(
-        @ApiParam("The user body", required = true)
-        @RequestBody user: User,
+        @ApiParam("The login an account linked with", required = true)
+        @RequestParam login: String,
+        @ApiParam("New password of an account", required = true)
+        @RequestParam password: String,
         @AuthenticationPrincipal adminUser: User?
     ): String {
-        if (adminUser != null && adminUser.id != user.id) {
+        if (adminUser != null && adminUser.login != login) {
             throw IncorrectTokenException()
         }
-        return userService.changePassword(user)
+        return userService.changePassword(login, password)
     }
 
     @GetMapping("/validate")
