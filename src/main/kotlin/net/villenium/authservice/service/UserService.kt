@@ -15,10 +15,12 @@ import org.springframework.stereotype.Service
 @Service
 class UserService(
     private val userRepository: UserRepository,
-    private val activationCache: Cache<User, Int>,
     private val passwordEncoder: PasswordEncoder,
     private val emailService: EmailService,
-    private val tokenService: TokenService
+    private val tokenService: TokenService,
+
+    private val activationCache: Cache<User, Int>,
+    private val sessionCache: Cache<String, String>
 ) {
 
     fun find(login: String): User {
@@ -50,7 +52,7 @@ class UserService(
         return true
     }
 
-    fun activate(email: String, code: Int): String {
+    fun activate(email: String, code: Int) {
         val entry: Map.Entry<User, Int> = activationCache.asMap()
             .entries
             .stream()
@@ -61,15 +63,15 @@ class UserService(
             throw InvalidCodeException()
         }
         activationCache.invalidate(entry.key)
-        val createdUser: User = save(entry.key, true)
-        return tokenService.createToken(createdUser)
+        save(entry.key, true)
     }
 
-    fun login(login: String, password: String): String {
+    fun login(login: String, password: String, ip: String): String {
         val user: User = find(login)
         if (!validateAccount(login, password)) {
             throw IncorrectPasswordException()
         }
+        sessionCache.put(login, ip)
         return tokenService.createToken(user)
     }
 
@@ -82,6 +84,10 @@ class UserService(
     fun validateAccount(login: String, password: String): Boolean {
         val user: User = find(login)
         return passwordEncoder.matches(password, user.password)
+    }
+
+    fun hasSession(login: String, ip: String): Boolean {
+        return sessionCache.asMap().any { it.key == login && it.value == ip }
     }
 
     private fun save(user: User, create: Boolean): User {

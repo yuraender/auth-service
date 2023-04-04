@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.servlet.view.InternalResourceViewResolver
 import springfox.documentation.builders.PathSelectors
 import springfox.documentation.builders.RequestHandlerSelectors
 import springfox.documentation.spi.DocumentationType
@@ -24,5 +25,10 @@ class SwaggerConfig {
             .paths(PathSelectors.ant("/api/auth/**"))
             .build()
             .useDefaultResponseMessages(false)
+    }
+
+    @Bean
+    fun viewResolver(): InternalResourceViewResolver {
+        return InternalResourceViewResolver()
     }
 }

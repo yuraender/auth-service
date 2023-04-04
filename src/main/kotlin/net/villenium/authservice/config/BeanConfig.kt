@@ -30,4 +30,9 @@ class BeanConfig {
     fun activationCache(): Cache<User, Int> = Caffeine.newBuilder()
         .expireAfterWrite(Duration.ofMinutes(5))
         .build()
+
+    @Bean
+    fun sessionCache(): Cache<String, String> = Caffeine.newBuilder()
+        .expireAfterWrite(Duration.ofDays(1))
+        .build()
 }

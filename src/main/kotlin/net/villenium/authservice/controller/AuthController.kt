@@ -20,12 +20,14 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import javax.servlet.http.HttpServletRequest
 
 @RestController
 @RequestMapping("/auth", produces = [MediaType.APPLICATION_JSON_VALUE])
 @Api(description = "Operations pertaining to authorization")
 class AuthController(
-    private val userService: UserService
+    private val userService: UserService,
+    private val request: HttpServletRequest
 ) {
 
     @PostMapping("/register")
@@ -43,10 +45,9 @@ class AuthController(
     }
 
     @PostMapping("/activate")
-    @ApiOperation("Activate an account", response = String::class)
+    @ApiOperation("Activate an account")
     @ApiResponses(value = [
-        ApiResponse(code = 200, message = "Token",
-            examples = Example(ExampleProperty(token, mediaType = "application/json"))),
+        ApiResponse(code = 200, message = "Account has been activated"),
         ApiResponse(code = 400, message = "Activation code is invalid"),
         ApiResponse(code = 404, message = "User is not found"),
         ApiResponse(code = 500, message = "Validation error")
@@ -56,8 +57,8 @@ class AuthController(
         @RequestParam email: String,
         @ApiParam("An activation code", required = true)
         @RequestParam code: Int
-    ): String {
-        return userService.activate(email, code)
+    ) {
+        userService.activate(email, code)
     }
 
     @PostMapping("/login")
@@ -75,7 +76,7 @@ class AuthController(
         @ApiParam("Password of an account", required = true)
         @RequestParam password: String
     ): String {
-        return userService.login(login, password)
+        return userService.login(login, password, request.remoteHost)
     }
 
     @PostMapping("/changePassword")
@@ -117,6 +118,20 @@ class AuthController(
         @RequestParam password: String
     ): Boolean {
         return userService.validateAccount(login, password)
+    }
+
+    @GetMapping("/hasSession")
+    @ApiOperation("Validate a session", response = Boolean::class)
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Status"),
+        ApiResponse(code = 404, message = "User is not found"),
+        ApiResponse(code = 500, message = "Validation error")
+    ])
+    fun hasSession(
+        @ApiParam("The login an account linked with", required = true)
+        @RequestParam login: String
+    ): Boolean {
+        return userService.hasSession(login, request.remoteHost)
     }
 
     companion object {
