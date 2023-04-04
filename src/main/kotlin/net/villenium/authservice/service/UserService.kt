@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache
 import net.villenium.authservice.EMAIL_ADDRESS_PATTERN
 import net.villenium.authservice.IncorrectPasswordException
 import net.villenium.authservice.InvalidCodeException
+import net.villenium.authservice.PASSWORD_PATTERN
 import net.villenium.authservice.UserAlreadyExistException
 import net.villenium.authservice.UserNotFoundException
 import net.villenium.authservice.ValidationException
@@ -37,8 +38,8 @@ class UserService(
             .stream()
             .anyMatch { it.email == user.email }
             .let { if (it) throw UserAlreadyExistException() }
-        if (userRepository.findByLogin(user.login!!) != null
-            || userRepository.findByEmail(user.email!!) != null) {
+        if (userRepository.findByLogin(user.login) != null
+            || userRepository.findByEmail(user.email) != null) {
             throw UserAlreadyExistException()
         }
 
@@ -81,6 +82,11 @@ class UserService(
         return tokenService.createToken(save(user, false))
     }
 
+    fun isRegistered(loginOrEmail: String): Boolean {
+        return userRepository.findByLogin(loginOrEmail) != null
+                || userRepository.findByEmail(loginOrEmail) != null
+    }
+
     fun validateAccount(login: String, password: String): Boolean {
         val user: User = find(login)
         return passwordEncoder.matches(password, user.password)
@@ -104,15 +110,14 @@ class UserService(
     }
 
     private fun validate(user: User): User {
-        if (user.login.isNullOrEmpty()) {
-            throw ValidationException("Login is null or empty")
+        if (user.login.isEmpty()) {
+            throw ValidationException("Login is empty")
         }
-        if (user.password.isNullOrEmpty()) {
-            throw ValidationException("Password is null or empty")
+        if (!PASSWORD_PATTERN.matcher(user.password).find()) {
+            throw ValidationException("Password is empty or invalid")
         }
-        if (user.email.isNullOrEmpty()
-            || !EMAIL_ADDRESS_PATTERN.matcher(user.email).find()) {
-            throw ValidationException("Email is null or empty, or invalid")
+        if (!EMAIL_ADDRESS_PATTERN.matcher(user.email).find()) {
+            throw ValidationException("Email is empty or invalid")
         }
         return user
     }

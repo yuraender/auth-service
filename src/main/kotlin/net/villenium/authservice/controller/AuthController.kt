@@ -104,6 +104,18 @@ class AuthController(
         return userService.changePassword(login, password)
     }
 
+    @GetMapping("/isRegistered")
+    @ApiOperation("Check if login or email is used", response = Boolean::class)
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Status")
+    ])
+    fun isRegistered(
+        @ApiParam("Login or email an account linked with", required = true)
+        @RequestParam loginOrEmail: String
+    ): Boolean {
+        return userService.isRegistered(loginOrEmail)
+    }
+
     @GetMapping("/validate")
     @ApiOperation("Validate an account", response = Boolean::class)
     @ApiResponses(value = [

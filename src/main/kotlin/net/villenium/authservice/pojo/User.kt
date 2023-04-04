@@ -15,11 +15,11 @@ class User(
     val id: Int,
 
     @Column(length = 16, nullable = false, unique = true)
-    val login: String?,
+    val login: String,
 
-    @Column(length = 100, nullable = false)
-    var password: String?,
+    @Column(nullable = false)
+    var password: String,
 
     @Column(length = 254, nullable = false, unique = true)
-    val email: String?
+    val email: String
 )
