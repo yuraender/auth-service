@@ -98,6 +98,9 @@ class UserService(
 
     private fun save(user: User, create: Boolean): User {
         validate(user)
+        if (!PASSWORD_PATTERN.matcher(user.password).find()) {
+            throw ValidationException("Password is invalid")
+        }
         return if (create) {
             user.password = passwordEncoder.encode(user.password)
             userRepository.saveAndFlush(user)
@@ -113,8 +116,8 @@ class UserService(
         if (user.login.isEmpty()) {
             throw ValidationException("Login is empty")
         }
-        if (!PASSWORD_PATTERN.matcher(user.password).find()) {
-            throw ValidationException("Password is empty or invalid")
+        if (user.password.isEmpty()) {
+            throw ValidationException("Password is empty")
         }
         if (!EMAIL_ADDRESS_PATTERN.matcher(user.email).find()) {
             throw ValidationException("Email is empty or invalid")
