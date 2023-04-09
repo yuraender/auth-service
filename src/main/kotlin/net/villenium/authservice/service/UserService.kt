@@ -33,6 +33,10 @@ class UserService(
 
     fun register(user: User): Boolean {
         validate(user)
+        if (!PASSWORD_PATTERN.matcher(user.password).find()) {
+            throw ValidationException("Password is invalid")
+        }
+
         activationCache.asMap()
             .keys
             .stream()
@@ -77,6 +81,9 @@ class UserService(
     }
 
     fun changePassword(login: String, password: String): String {
+        if (!PASSWORD_PATTERN.matcher(password).find()) {
+            throw ValidationException("Password is invalid")
+        }
         val user: User = find(login)
         user.password = password
         return tokenService.createToken(save(user, false))
@@ -98,9 +105,6 @@ class UserService(
 
     private fun save(user: User, create: Boolean): User {
         validate(user)
-        if (!PASSWORD_PATTERN.matcher(user.password).find()) {
-            throw ValidationException("Password is invalid")
-        }
         return if (create) {
             user.password = passwordEncoder.encode(user.password)
             userRepository.saveAndFlush(user)
