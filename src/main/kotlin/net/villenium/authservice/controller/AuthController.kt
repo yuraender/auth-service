@@ -20,14 +20,12 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import javax.servlet.http.HttpServletRequest
 
 @RestController
 @RequestMapping("/auth", produces = [MediaType.APPLICATION_JSON_VALUE])
 @Api(description = "Operations pertaining to authorization")
 class AuthController(
-    private val userService: UserService,
-    private val request: HttpServletRequest
+    private val userService: UserService
 ) {
 
     @PostMapping("/register")
@@ -74,9 +72,11 @@ class AuthController(
         @ApiParam("The login an account linked with", required = true)
         @RequestParam login: String,
         @ApiParam("Password of an account", required = true)
-        @RequestParam password: String
+        @RequestParam password: String,
+        @ApiParam("Session IP", required = true)
+        @RequestParam ip: String
     ): String {
-        return userService.login(login, password, request.remoteHost)
+        return userService.login(login, password, ip)
     }
 
     @PostMapping("/changePassword")
@@ -141,9 +141,11 @@ class AuthController(
     ])
     fun hasSession(
         @ApiParam("The login an account linked with", required = true)
-        @RequestParam login: String
+        @RequestParam login: String,
+        @ApiParam("Session IP", required = true)
+        @RequestParam ip: String
     ): Boolean {
-        return userService.hasSession(login, request.remoteHost)
+        return userService.hasSession(login, ip)
     }
 
     companion object {
