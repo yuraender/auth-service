@@ -2,6 +2,7 @@ package net.villenium.authservice.service
 
 import com.github.benmanes.caffeine.cache.Cache
 import net.villenium.authservice.EMAIL_ADDRESS_PATTERN
+import net.villenium.authservice.EMAIL_MESSAGE
 import net.villenium.authservice.IncorrectPasswordException
 import net.villenium.authservice.InvalidCodeException
 import net.villenium.authservice.PASSWORD_PATTERN
@@ -52,7 +53,7 @@ class UserService(
         emailService.sendMessage(
             user.email,
             "Подтверждение регистрации",
-            "Код для активации: $code"
+            EMAIL_MESSAGE.format(code)
         )
         return true
     }

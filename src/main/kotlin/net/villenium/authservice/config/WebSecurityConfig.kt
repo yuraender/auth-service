@@ -14,7 +14,8 @@ class WebSecurityConfig(
 ) : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
-        http.csrf().disable()
+        http.cors().and()
+            .csrf().disable()
             .addFilterAfter(authorizationFilter, BasicAuthenticationFilter::class.java)
             .authorizeRequests()
             .antMatchers("/auth/changePassword", "/auth/changePassword/**").authenticated()
