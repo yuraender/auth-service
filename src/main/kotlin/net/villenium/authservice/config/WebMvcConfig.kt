@@ -23,7 +23,7 @@ class WebMvcConfig(
 
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/auth/**")
-            .allowedOrigins("https://registry.villenium.net")
+            .allowedOrigins("https://villenium.net")
             .allowedMethods("GET", "POST")
             .allowedHeaders("*")
             .maxAge(3600)
