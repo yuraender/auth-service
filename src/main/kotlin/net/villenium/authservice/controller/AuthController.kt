@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import javax.servlet.http.Cookie
+import javax.servlet.http.HttpServletResponse
 
 @RestController
 @RequestMapping("/auth", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -74,9 +76,12 @@ class AuthController(
         @ApiParam("Password of an account", required = true)
         @RequestParam password: String,
         @ApiParam("Session IP", required = true)
-        @RequestParam ip: String
+        @RequestParam ip: String,
+        response: HttpServletResponse
     ): String {
-        return userService.login(login, password, ip)
+        val token = userService.login(login, password, ip)
+        this.setSessionCookie(response, token)
+        return token
     }
 
     @PostMapping("/changePassword")
@@ -96,12 +101,15 @@ class AuthController(
         @RequestParam login: String,
         @ApiParam("New password of an account", required = true)
         @RequestParam password: String,
-        @AuthenticationPrincipal adminUser: User?
+        @AuthenticationPrincipal adminUser: User?,
+        response: HttpServletResponse
     ): String {
         if (adminUser != null && adminUser.login != login) {
             throw IncorrectTokenException()
         }
-        return userService.changePassword(login, password)
+        val token = userService.changePassword(login, password)
+        this.setSessionCookie(response, token)
+        return token
     }
 
     @GetMapping("/isRegistered")
@@ -146,6 +154,14 @@ class AuthController(
         @RequestParam ip: String
     ): Boolean {
         return userService.hasSession(login, ip)
+    }
+
+    private fun setSessionCookie(response: HttpServletResponse, token: String) {
+        val cookie = Cookie("session", token)
+        cookie.secure = true
+        cookie.isHttpOnly = true
+        cookie.maxAge = 86400
+        response.addCookie(cookie)
     }
 
     companion object {
