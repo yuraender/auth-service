@@ -6,6 +6,7 @@ plugins {
     kotlin("plugin.jpa") version "1.6.21"
     id("org.springframework.boot") version "2.4.13"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
+    id("maven-publish")
 }
 
 group = "net.villenium"
@@ -37,5 +38,26 @@ tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
         jvmTarget = "17"
+    }
+}
+
+configurations {
+    listOf(apiElements, runtimeElements).forEach {
+        it.get().outgoing.artifact(tasks.bootJar)
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            url = uri("https://repo.yuraender.ru/private")
+            credentials {
+                username = System.getenv("YE_REPO_USER")
+                password = System.getenv("YE_REPO_PASSWORD")
+            }
+        }
+    }
+    publications.create<MavenPublication>("maven") {
+        artifact(tasks.bootJar.get())
     }
 }
